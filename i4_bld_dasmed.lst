@@ -24,7 +24,7 @@ addr 	data	label	mnem.	operand		comment
 						;MOV (R0),(R3)+ are used for transferring data from
 						;DX DR to first 128 bytes of RAM. Pointer register
 						;R3 is not directly initiated as 0, but it is
-						;initiated as 3 and should be 0 after three right shifts 
+						;initiated as 7 and should be 0 after three right shifts 
 						;with ASR R3 command.
 
 173042/030211		BIT	R2,(R1)		;Test drive status
