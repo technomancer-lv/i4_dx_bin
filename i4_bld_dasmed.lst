@@ -1,0 +1,47 @@
+addr 	data	label	mnem.	operand		comment
+-----------------------------------------------------------------------------
+173000/012702	start:	MOV	#100247,R2	;Pattern for testing CSR bits	
+173002/100247
+173004/012701		MOV	#177170,R1	;DX controller CSR address
+173006/177170
+173010/130211		BITB	R2,(R1)		;Loop until drive ready
+173012/001776		BEQ	173010
+173014/112703		MOVB	#7,R3		;Some kind of state machine variable init
+						;for track and sector number output
+173016/000007
+173020/010100		MOV	R1,R0
+173022/010220		MOV	R2,(R0)+	;Runs "Read sector" command and saves
+						;DX DR address into R0
+173024/000402		BR	173032
+173026/012710		MOV	#1,(R0)		;Two times outputs "1" - number of
+						;sector and track to read
+173030/000001
+173032/006203		ASR	R3
+173034/103402		BCS	173042		;If C is set, output track and sector number (1)
+173036/112711		MOVB	#111023,(R1)	;Runs "Read drive buffer" command
+173040/111023					;This is weird, this location can be used as both data for
+						;earlier command, both as command MOVB (R0),(R3)+
+						;MOV (R0),(R3)+ are used for transferring data from
+						;DX DR to first 128 bytes of RAM. Pointer register
+						;R3 is not directly initiated as 0, but it is
+						;initiated as 3 and should be 0 after three right shifts 
+						;with ASR R3 command.
+
+173042/030211		BIT	R2,(R1)		;Test drive status
+173044/001776		BEQ	173042		;Loop until ready
+173046/100756		BMI	173004		;If error bit is set - start over.
+173050/103766		BCS	173026		;If C is set - output track and sector number
+173052/105711		TSTB	(R1)		;Test if "IR" (data request) signal is active
+173054/100771		BMI	173040		;Read sector, byte by byte.
+173056/005000		CLR	R0		;Test if first instruction is NOP?
+173060/022710		CMP	#000240,(R0)
+173062/000240
+173064/001347		BNE	173004		;If no, start over.
+173066/122702		CMPB	#247,R2		
+173070/000247
+173072/005500		ADC	R0		;Saves some kind of drive status into R0
+						;for later use of loaded OS?
+173074/005007		CLR	PC		;Jumps to code execution
+173076/000000		HALT
+
+
